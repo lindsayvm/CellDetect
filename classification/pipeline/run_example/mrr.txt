@@ -1,0 +1,3 @@
+ImageID	Image Name	By	Question	Answer
+84820	T08-95156_HE	s.hajizadeh@nki.nl	target_scoring_rectangle	[{"type":"rect","corner":{"x":1211,"y":877},"size":{"x":51268,"y":43231}}]
+84819	T08-95157_HE	s.hajizadeh@nki.nl	target_scoring_rectangle	[{"type":"rect","corner":{"x":1597,"y":1078},"size":{"x":42223,"y":28431}}]
