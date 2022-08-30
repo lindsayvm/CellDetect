@@ -16,12 +16,12 @@ import torch
 sys.path.append("/home/l.leek/HECellClassification-main")
 
 import config as gconfig
-from tracking_single import TaskTracker
+from CellDetect.tracking_single import TaskTracker
 from slidescore.data import CellDetectionDataset, WSICellDetectionDataset, CellClassificationDataset, WSICellClassificationDatasetFromCache
 from slidescore.client import SlidescoreClient
 import nn.models as models
 from image.data import HistoDataset
-import segmentation.segmentation_models_pytorch as smp
+import segmentation as smp
 
 
 #

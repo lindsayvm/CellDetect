@@ -19,7 +19,7 @@ import torch.multiprocessing
 from collections import namedtuple
 #
 import config as gconfig
-from tracking import TaskTracker
+from CellDetect.tracking import TaskTracker
 sys.path.append(gconfig.base_path)
 from slidescore.data import CellDetectionDataset, WSICellDetectionDataset, CellClassificationDataset, WSICellClassificationDatasetFromCache
 from slidescore.client import SlidescoreClient
