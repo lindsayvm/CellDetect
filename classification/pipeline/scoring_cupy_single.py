@@ -13,10 +13,10 @@ import pandas as pd
 from skimage import morphology, filters
 import torch
 
-sys.path.append("/home/l.leek/HECellClassification-main")
+#sys.path.append("/home/l.leek/HECellClassification-main")
 
 import config as gconfig
-from CellDetect.tracking_single import TaskTracker
+from tracking_single import TaskTracker
 from slidescore.data import CellDetectionDataset, WSICellDetectionDataset, CellClassificationDataset, WSICellClassificationDatasetFromCache
 from slidescore.client import SlidescoreClient
 import nn.models as models
