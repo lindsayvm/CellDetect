@@ -62,6 +62,7 @@ class BaseModelOperations:
                  config: Config = None):
         self.config = config if config else Config()
         self.device = torch.device(self.config.device)
+        print(self.device)
         self.model = model.to(self.device)
         self.logger = Logger()
         
@@ -70,6 +71,8 @@ class BaseModelOperations:
         #     self._disable_stats()
         
     def _to_device(self, v, levels=0):
+        #print(levels)
+        #print(self.device)
         if levels == 0:
             return v.to(self.device)
         elif levels == 1:
@@ -86,7 +89,7 @@ class BaseModelOperations:
         
         if path is None:
             path = self.default_model_savepath
-        self.model.load_state_dict(torch.load(path))
+        self.model.load_state_dict(torch.load(path, map_location="cuda:0"))
         
     def _disable_stats(self):
         for child in self.model.modules():
