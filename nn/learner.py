@@ -62,17 +62,13 @@ class BaseModelOperations:
                  config: Config = None):
         self.config = config if config else Config()
         self.device = torch.device(self.config.device)
-        print(self.device)
         self.model = model.to(self.device)
-        self.logger = Logger()
-        
+        self.logger = Logger()    
         
         # if self.config.disable_batchnorm_track_running_stats:
         #     self._disable_stats()
         
     def _to_device(self, v, levels=0):
-        #print(levels)
-        #print(self.device)
         if levels == 0:
             return v.to(self.device)
         elif levels == 1:
@@ -147,6 +143,8 @@ class Learner(BaseModelOperations):
         self.model.train()
         self.count_mb = 0
         train_losses = []
+
+        #print(list(self.model.named_parameters()))
         
         for (_x, _y) in self.training_data:
             x = self._to_device(_x, levels=self.x_levels) 

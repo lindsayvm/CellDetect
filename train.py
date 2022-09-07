@@ -92,21 +92,19 @@ print("apply model weights")
 config.Adam_lr = 0.00001
 learner = Learner(model=model,
                   # weights for the classe samples can be passed here
-                  criterion=torch.nn.CrossEntropyLoss(weight=torch.Tensor([1., 1., 1., 1., 1., 1.])),
+                  criterion=torch.nn.CrossEntropyLoss(),#weight=torch.Tensor([1., 1.])),
                   training_dataset=training_data,
                   validation_dataset=validation_data,
                   config=config)
 
 # If learning rate warm-up needs to be done, it should be here by accessing learner.optimizer and learner.lr_scheduler.
+# ???!! would be nice to have learner seperate 
 print("knowledge distillation")
-#Need GPUs
 learner.load_model_state('/home/l.leek/src/CellDetect/IID/cc_dense161_256p_6class_v01_3adam1e5.pkl')
 # if some layers need to be frozen, it should be done here
 
 print("model")
-learner.model.classifier = torch.nn.Linear(in_features=2208, out_features=2, bias = True)
-
-#learner.model.classifier
+learner.model.classifier = torch.nn.Linear(in_features=2208, out_features=2, bias = True).to(config.device)
 
 print("start train")
 #Validation epochs; you can set to 1; or 5 is also good
