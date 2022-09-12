@@ -41,18 +41,17 @@ def cell_detection(image_id, config, load_from_previous=True):
                 return pickle.load(f)
         except FileNotFoundError:
             print(results_save_path + ' not found, running cd...')
-            
+
     detection_dataset = CellDetectionDataset(
         key_fpath=config.api_token_path,
         annotation_fpath=config.cd_targets_path, 
         annotation_by=config.cd_targets_annotation_by,
-        boxes_question=config.cd_target_box_question, #??? to which one should it match of my questions
-        points_question="Lymphocytes", #??? How do we get the other annotations?? ""
+        boxes_question=config.cd_target_box_question, 
+        points_question="Lymphocytes",
         image_id=image_id,
         sample_size=config.cd_sample_size, channel_first=True, entropy_filter=True,
         server=config.server)
-    
-    ##
+
     try:
         detection_dataset.client.load_cache(path=cache_save_path)
     except:
@@ -128,6 +127,9 @@ def cell_classification(image_id, config, load_from_previous=True):
         cached_tiles=cd_data.client._tiles, cell_centers=cd_scores[image_id],
         channel_first=True, minibatch_size=config.cc_mb_size, server=config.server, cuda_device_index=0) ### GET PROPER DEVICE!!!!        
     
+
+
+
     classification_dataset.labels = pd.DataFrame(
         np.concatenate([np.concatenate((np.tile([k, -1], (v.shape[0], 1)), v), axis=1) for k, v in cd_scores.items()]),
         columns=['image_id', 'label', 'y', 'x'])
@@ -211,7 +213,7 @@ if __name__ == '__main__':
     gconfig.results_path = run_path
     gconfig.cd_targets_path = run_path + 'mrr.txt'
     gconfig.progress_file_path = run_path + 'progress.json'
-    gconfig.cd_results_path = run_path + 'cell_detection_results_img{}.pkl'
+    gconfig.cd_results_path = run_path + 'cell_detection_results_img{}.pkl' 
     gconfig.cc_results_path = run_path + 'cell_classification_results_img{}.pkl'
     gconfig.tiles_cache_save_path = run_path + 'odcc_scoring_cache_img{}.pkl'
     #

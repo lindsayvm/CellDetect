@@ -110,11 +110,14 @@ print("start train")
 #Validation epochs; you can set to 1; or 5 is also good
 #Logs and stuff will be here
 learner.train(num_epochs=1, validation_epochs=1)
+#{'index': 1, 'duration': 4621.4426283836365, 'training_loss': 0.12992584946487368, 'validation_loss': 0.07898404994673273, 'validation_error': None, 'epoch': 1, 'lr': 1e-05, 'count_mb': 5961}
 
 #save model
+print("save model")
 learner.save_model_state('/home/l.leek/src/CellDetect/IID/trained_weights.pkl')
 
-
+#/opt/conda/bin/python3: Error while finding module specification for 'train.py' (ModuleNotFoundError: __path__ attribute not found on 'train' while trying to find 'train.py')
+#??????
 
 
 

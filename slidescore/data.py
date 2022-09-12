@@ -66,9 +66,12 @@ class SlidescoreDataset(ABC):
         self.sample_size = sample_size or SlidescoreDataset.sample_size
         self.target_mpp = target_mpp or SlidescoreDataset.target_mpp
 
+
+  
     def _collect_metadata(self):
         self.metadata = {image_id: self.client.get_image_metadata(image_id) for image_id in self.scores['ImageID'].unique()}
-        
+        return(self.metadata)
+
     def _calculate_conversions(self):
         for k, v in self.metadata.items():
             v['max_osd_zoom_level'] = math.ceil(math.log2(max(v['level0Width'], v['level0Height']))) ### + 1, see above
@@ -76,6 +79,17 @@ class SlidescoreDataset(ABC):
             v['divide'] = round(self.target_mpp / v['mpp'])
             v['zoom_out'] = round(math.log2(v['divide']))
             v['target_level'] = v['max_osd_zoom_level'] - v['zoom_out']
+
+    # def _calculate_conversions(self):
+    #     print(self.scores)
+    #     for image_id in self.scores['ImageID'].unique():
+    #         v = self.metadata[image_id]
+    #         v['max_osd_zoom_level'] = math.ceil(math.log2(max(v['level0Width'], v['level0Height'])))
+    #         v['mpp'] = (v['mppX'] + v['mppY']) / 2
+    #         v['divide'] = round(self.target_mpp / v['mpp'])
+    #         v['zoom_out'] = round(math.log2(v['divide']))
+    #         v['target_level'] = v['max_osd_zoom_level'] - v['zoom_out']
+    #         return(v)
 
     def __len__(self):
         return self.labels.shape[0]
@@ -201,13 +215,15 @@ class CellDetectionDataset(SlidescoreDataset):
     empty_patch_shannon_entropy_threshold = 3.5
     sample_ignore_margin = 8
 
+
     def __init__(self, key_fpath, annotation_fpath=None, annotation_by=None, 
                  sample_size=None, stride=None, 
                  boxes_question=None, points_question=None, image_id=None, 
                  channel_first=False, y_has_channel=False, entropy_filter=False,
                  annotation_mask='gaussian', server=None):
         super().__init__(key_fpath, sample_size=sample_size, server=server)
-        
+
+       
         if stride is None:
             stride = sample_size - CellDetectionDataset.sample_ignore_margin * 2
         self.stride = stride
@@ -224,13 +240,12 @@ class CellDetectionDataset(SlidescoreDataset):
         # read annotations and metadata
         a = pd.read_csv(annotation_fpath, sep='\t', dtype=str)
         self.scores =  a[a['By'] == annotation_by].copy().reset_index(drop=True)
-       
+      
         if image_id:
             self.scores = self.scores[self.scores['ImageID'] == image_id]
 
         self._collect_metadata()
-        self._calculate_conversions()
-       
+        self._calculate_conversions() # ??? add k (image id?)
  
         middle = round(sample_size / 2)
         gmesh = np.meshgrid(np.linspace(0, sample_size, sample_size), np.linspace(0, sample_size, sample_size))
@@ -251,7 +266,7 @@ class CellDetectionDataset(SlidescoreDataset):
             self.mask = self.tophat_mask
         else:
             raise ValueError(f'{str(annotation_mask)} not implemented')
-       
+
         self.boxes = pd.concat([pd.DataFrame([(p['ImageID'], # all coordinates are adjusted to the target level
                                                int(i['corner']['x'] / self.metadata[p['ImageID']]['divide']), 
                                                int(i['corner']['y'] / self.metadata[p['ImageID']]['divide']),
@@ -375,7 +390,7 @@ class WSICellDetectionDataset(CellDetectionDataset):
             self.metadata = {img['id']: self.client.get_image_metadata(img['id']) for img in images}
         else:
             self.metadata = {slide_id: self.client.get_image_metadata(slide_id)}
-
+        
         self._calculate_conversions()
 
         # all coordinates are adjusted to the target level
