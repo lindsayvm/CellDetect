@@ -3,8 +3,8 @@ default_device = 'cuda'
 server = 'https://slidescore.nki.nl'
 
 ## initialization
-cd_model_path = '/home/l.leek/src/CellDetect/IID/cell_detection_weights.pkl'
-cc_model_path = '/home/l.leek/src/CellDetect/IID/cell_classification_weights.pkl'
+cd_model_path = '/home/l.leek/src/CellDetect/IID/fai_unet_resnet152_stardist_and_mask_guided_2a2e4_mb8_256stride32.pkl'
+cc_model_path = '/home/l.leek/src/CellDetect/IID/trained_weights.pkl' 
 cd_sample_size = 256
 cc_sample_size = 256
 cd_mb_size = 32
@@ -21,7 +21,7 @@ max_running_tasks = 1
 ## model params
 cd_gaussiona_filter_sigma = 2.0
 cd_probability_threshold = 0.5
-cc_output_labs = ['model_tumor', 'model_lymphocyte', 'model_fibroblast', 'model_other', 'model_red', 'model_normal']
+cc_output_labs = ['model_tumor', 'model_lymphocyte']#['model_tumor', 'model_lymphocyte', 'model_fibroblast', 'model_other', 'model_red', 'model_normal']
 cc_num_classes = len(cc_output_labs)
 
 
