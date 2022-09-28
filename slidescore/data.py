@@ -223,14 +223,13 @@ class CellDetectionDataset(SlidescoreDataset):
                  annotation_mask='gaussian', server=None):
         super().__init__(key_fpath, sample_size=sample_size, server=server)
 
-       
         if stride is None:
             stride = sample_size - CellDetectionDataset.sample_ignore_margin * 2
         self.stride = stride
         self.channel_first = channel_first
         self.y_has_channel = y_has_channel
         self.entropy_filter = entropy_filter
-        
+
         if annotation_fpath is None:
             self.scores = None
             self.boxes = None
@@ -265,8 +264,7 @@ class CellDetectionDataset(SlidescoreDataset):
             self.mask = self.tophat_mask
         else:
             raise ValueError(f'{str(annotation_mask)} not implemented')
-#???? why do you neeed self.scores for self.boxes (ROI) or self.points (annotations), 
-# because the idea is that you can score a WSI without prior knowledge of location cell nuclei
+
         self.boxes = pd.concat([pd.DataFrame([(p['ImageID'], # all coordinates are adjusted to the target level
                                                int(i['corner']['x'] / self.metadata[p['ImageID']]['divide']), 
                                                int(i['corner']['y'] / self.metadata[p['ImageID']]['divide']),

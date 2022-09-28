@@ -150,10 +150,10 @@ class Learner(BaseModelOperations):
             x = self._to_device(_x, levels=self.x_levels) 
             y = self._to_device(_y)  # send to device (GPU or CPU)
             self.optimizer.zero_grad(set_to_none=True)  # zerograd the parameters
-            y_hat = self.model(x)  # one forward pass
+            y_hat = self.model(x)  # forward pass
             #print(x.shape, y.shape, y_hat.shape, type(x), type(y), type(y_hat))
             loss = self.criterion(y_hat, y)  # calculate loss
-            loss_value = loss.detach().item() 
+            loss_value = loss.detach().item() #detach tensor from gradient updates
             #print(loss_value)
             train_losses.append(loss_value)
             loss.backward()  # one backward pass
@@ -170,7 +170,7 @@ class Learner(BaseModelOperations):
             for _x, _y in self.validation_data:
                 x = self._to_device(_x, levels=self.x_levels) 
                 y = self._to_device(_y)  # send to device (GPU or CPU)
-                with torch.no_grad():
+                with torch.no_grad():  # do not calculate gradients of new vars, just update values
                     y_hat = self.model(x)
                     vloss = self.criterion(y_hat, y)
                     vloss_value = vloss.detach().item() 
@@ -197,13 +197,13 @@ class Learner(BaseModelOperations):
     def adjust_lr(self):
         # if metric is None:
         #     metric = self.training_losses[self.count_epoch]
-        self.lr_scheduler.step()
+        self.lr_scheduler.step() 
 
     def train(self, num_epochs=5, validation_epochs=1, print_log=True):
         for i in range(0, num_epochs):
             validation = (i % validation_epochs == 0) or (i == num_epochs - 1)
             self.epoch(validation=validation, print_log=print_log)
-            self.adjust_lr()
+            self.adjust_lr()  #constant lr per epoch
             
     def predict(self, x):
         self.model.eval()
