@@ -1,3 +1,5 @@
+
+from random import sample
 from scipy.special import softmax
 import pickle
 import pandas as pd
@@ -5,8 +7,6 @@ import numpy as np
 import json
 import sys
 import collections 
-from slidescore.client import SlidescoreClient
-from slidescore.data import CellDetectionDataset as Celld
 from sklearn.neighbors import KernelDensity
 from skimage import measure
 from scipy.stats import entropy
@@ -20,20 +20,29 @@ from shapely.geometry import Polygon, MultiPolygon, mapping
 from shapely.affinity import translate
 import fiona
 import geopandas as geopd
+
+from slidescore.client import SlidescoreClient
+from slidescore.data import CellDetectionDataset 
+import config
+
+
+
 #problem with installing?
 #singularity exec --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif      bash -c "pip install geopandas; python3 export_ccpred_geojson.py"
 
-
 uploader_name = 'l.leek@nki.nl'
+
+annotation_fpath= '/home/l.leek/src/CellDetect/IID/mmr_scoring_mask.txt' #has to have rectangle annotations
+a = pd.read_csv(annotation_fpath, sep='\t', dtype=str)
+annotation_by=['l.leek@nki.nl']
+scores = a[a['By'].apply(lambda b: b in annotation_by)].copy().reset_index(drop=True)
 
 with open('/home/l.leek/src/CellDetect/IID/IID_slidescore_training.key', 'r') as f:
     apitoken = f.read().strip()
-
 client = SlidescoreClient(apitoken, server='https://slidescore.nki.nl')
+metadata = {i: client.get_image_metadata(i) for i in scores['ImageID'].unique()} #Change to ImageID
 
-#get scores 
-metadata = {i: client.get_image_metadata(i) for i in scores['image_id'].unique()}
-exit()
+
 with open('IID/cell_classification_results_img386667.pkl', 'rb') as f:
     d = pickle.load(f)
     preds = d['preds']
@@ -41,22 +50,24 @@ with open('IID/cell_classification_results_img386667.pkl', 'rb') as f:
 
 uncertain_threshold = .49
 uncertain = softmax(preds, axis=1).max(axis=1) < uncertain_threshold
-uncertain.sum()
 
 labs = ['model_tumor', 'model_lymphocyte']#, 'model_fibroblast', 'model_epi_endo_thelial', 'model_other']
 plabs = np.array([labs[i] for i in np.argmax(preds, axis=1)])
 plabs[uncertain] = 'model_uncertain'
 scores['label'] = plabs
+#Cannot multiply chars, so change to int
+scores.x, scores.y = scores.x.astype(int), scores.y.astype(int) 
+print(scores)
 
-print(scores[1:5,])
+#??? ==> addes this so we only have 1 patient
+image_id = ''.join(np.unique(scores['image_id']))
 
-objects = Celld(key_fpath='api.key',
-                annotation_fpath='mrr.txt',                
-                annotation_by='s.hajizadeh@nki.nl',
+objects = CellDetectionDataset(key_fpath='/home/l.leek/src/CellDetect/IID/IID_slidescore_training.key',
+                annotation_fpath='/home/l.leek/src/CellDetect/IID/mmr_scoring_mask.txt',                
+                annotation_by='l.leek@nki.nl', 
+                sample_size=config.cc_sample_size, #add sample size to determine stride,
+                image_id=image_id, #add image_id
                 boxes_question='target_scoring_rectangle', points_question='')
-
-
-print(objects.boxes)
 
 resolution_divide = 50
 def points2heatmap(l, b):
@@ -79,14 +90,17 @@ def points2heatmap(l, b):
     h = h * 254 / max_cells
     return h.astype(int)
 
+print("points2heatmap")
 h = points2heatmap('model_tumor', objects.boxes.loc[0])
 
 ph = h#[500:600, 150:250]
 figsize = 1/20
 plt.figure(figsize=(ph.shape[1] * figsize, ph.shape[0] * figsize))
-##### plt.contourf(ph[::-1, :])
-# plt.imshow(ph > 10)
-# plt.show()
+#### plt.contourf(ph[::-1, :])
+plt.imshow(ph > 10)
+plt.show()
+plt.savefig('/home/l.leek/src/CellDetect/IID/baseline_mask_plot.png')
+
 
 def cartesian(x1, x2):
     return np.transpose([np.tile(x1, len(x2)), np.repeat(x2, len(x1))])
@@ -117,6 +131,7 @@ def points2smooth(l, b, bandwidth=0.5, num_process=1):
         m = np.concatenate(pool.map(_f, g_parts)).reshape((gx.shape[0], gy.shape[0])).T
     return m / m.max()
 
+print("points2smooth")
 m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=8)
 
 
@@ -131,7 +146,7 @@ plt.figure(figsize=(pm.shape[1] * figsize, pm.shape[0] * figsize))
 # and for rd 50 bw 1.5 was 0.06
 th = 0.06
 contours = measure.find_contours(m, th, fully_connected='low', positive_orientation='high')
-len(contours)
+print(len(contours))
 
 # Display the image and plot all contours found
 fig, ax = plt.subplots(figsize=(pm.shape[1] * figsize, pm.shape[0] * figsize))

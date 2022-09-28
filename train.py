@@ -46,6 +46,7 @@ annotation_fpath= '/home/l.leek/src/CellDetect/IID/mrr.txt'
 a = pd.read_csv(annotation_fpath, sep='\t', dtype=str)
 annotation_by=['l.leek@nki.nl']
 scores = a[a['By'].apply(lambda b: b in annotation_by)].copy().reset_index(drop=True)
+
 annotation_classes = {v: i for i, v in enumerate(scores['Question'].unique())}
 
 print("connect to slidescore")
