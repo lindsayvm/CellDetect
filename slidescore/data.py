@@ -245,8 +245,7 @@ class CellDetectionDataset(SlidescoreDataset):
             self.scores = self.scores[self.scores['ImageID'] == image_id]
 
         self._collect_metadata()
-        self._calculate_conversions() # ??? add k (image id?)
- 
+        self._calculate_conversions() 
         middle = round(sample_size / 2)
         gmesh = np.meshgrid(np.linspace(0, sample_size, sample_size), np.linspace(0, sample_size, sample_size))
         
@@ -266,7 +265,8 @@ class CellDetectionDataset(SlidescoreDataset):
             self.mask = self.tophat_mask
         else:
             raise ValueError(f'{str(annotation_mask)} not implemented')
-
+#???? why do you neeed self.scores for self.boxes (ROI) or self.points (annotations), 
+# because the idea is that you can score a WSI without prior knowledge of location cell nuclei
         self.boxes = pd.concat([pd.DataFrame([(p['ImageID'], # all coordinates are adjusted to the target level
                                                int(i['corner']['x'] / self.metadata[p['ImageID']]['divide']), 
                                                int(i['corner']['y'] / self.metadata[p['ImageID']]['divide']),
@@ -430,7 +430,7 @@ class CellClassificationDataset(SlidescoreDataset):
                 [(p['ImageID'], p['Question'], i['x'], i['y']) for i in json.loads(p['Answer']) if i.get('x', False)], 
                 columns=['image_id', 'label', 'x', 'y'])
              for _, p in self.scores.iterrows()]).sort_values(by='image_id').reset_index(drop=True)
-        
+
         if filter_classes is not None:
             self.labels = self.labels[self.labels['label'].apply(lambda s: s in filter_classes)].reset_index(drop=True)
         
