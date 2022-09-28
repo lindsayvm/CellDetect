@@ -32,14 +32,13 @@ config.device = 'cuda:0'
 ## Assign label class number
 with open(base_path + 'classification/cell_labels_translate.json', 'r') as f:
     reverse_translate_labels = json.load(f)
-
+    
 annotation_classes = {}
 i = 0
 for v in reverse_translate_labels.values():
     if annotation_classes.get(v, -1) == -1:
         annotation_classes[v] = i
         i += 1
-
 print(annotation_classes)
 
 ## Create training (and validation) dataset from all trainig samples 
@@ -57,10 +56,11 @@ cell = CellClassificationDataset(key_fpath='/home/l.leek/src/CellDetect/IID/IID_
                                  server='https://slidescore.nki.nl', 
                                  channel_first=True,  # (channel last is possible but not default in pytorch)
                                  sample_size=256) #width and height, bcs only squares
-  
+
 # change string labels to class numbers that was created in the previous block
 cell.labels.label = cell.labels.label.apply(lambda x: reverse_translate_labels[x])
 cell.annotation_classes = annotation_classes
+print(cell.annotation_classes)
 
 print("split in train and validation")
 training_objects, validation_objects = cell.split(r=.9)
@@ -84,14 +84,13 @@ validation_data = HistoDataset(validation_objects.get_samples,
 
 print("feed forward")
 ### model = iv3(num_classes=len(cell.annotation_classes))
-model = densenet161(num_classes=6)#len(cell.annotation_classes))
+model = densenet161(num_classes=6)#len(cell.annotation_classes)) #??? initial model had 6 and now it is difficutl to change --> LATER
 
 #setup train
-
 print("apply model weights")
 config.Adam_lr = 0.00001
 learner = Learner(model=model,
-                  # weights for the classe samples can be passed here
+                  # weights for the class samples can be passed here
                   criterion=torch.nn.CrossEntropyLoss(),#weight=torch.Tensor([1., 1.])),
                   training_dataset=training_data,
                   validation_dataset=validation_data,
@@ -103,6 +102,7 @@ print("knowledge distillation")
 learner.load_model_state('/home/l.leek/src/CellDetect/IID/cc_dense161_256p_6class_v01_3adam1e5.pkl')
 # if some layers need to be frozen, it should be done here
 
+#add last layer because we have two classes that are predicted
 print("model")
 learner.model.classifier = torch.nn.Linear(in_features=2208, out_features=2, bias = True).to(config.device)
 
@@ -116,8 +116,6 @@ learner.train(num_epochs=1, validation_epochs=1)
 print("save model")
 learner.save_model_state('/home/l.leek/src/CellDetect/IID/trained_weights.pkl')
 
-#/opt/conda/bin/python3: Error while finding module specification for 'train.py' (ModuleNotFoundError: __path__ attribute not found on 'train' while trying to find 'train.py')
-#??????
 
 
 

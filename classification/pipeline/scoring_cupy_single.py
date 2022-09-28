@@ -47,7 +47,7 @@ def cell_detection(image_id, config, load_from_previous=True):
         annotation_fpath=config.cd_targets_path, 
         annotation_by=config.cd_targets_annotation_by,
         boxes_question=config.cd_target_box_question, 
-        points_question="Lymphocytes",
+        points_question="", #Lymphocytes
         image_id=image_id,
         sample_size=config.cd_sample_size, channel_first=True, entropy_filter=True,
         server=config.server)
@@ -64,17 +64,18 @@ def cell_detection(image_id, config, load_from_previous=True):
         return [p[np.all(p > CellDetectionDataset.sample_ignore_margin , axis=1)] for p in p_batch]
 
     def sfn(_x):
+        #scoring function
         x = torch.from_numpy(_x).float().to(device)
-        return output2points(model(x).detach().to("cpu").numpy())
+        return output2points(model(x).detach().to("cpu").numpy())#???not gpu?
 
     with torch.no_grad():
         model = models.load_state(models.resnet152unet(config.cd_sample_size, pretrained=False), config.cd_model_path, device=config.default_device)
         # model = models.load_state(smp.Unet('densenet161', encoder_weights=None), config.cd_model_path, device=config.default_device)
-        
     model.to(device)
-    with torch.no_grad():
-        scores = detection_dataset.score_minibatch(sfn, config.cd_mb_size)
 
+    with torch.no_grad():
+        scores = detection_dataset.score_minibatch(sfn, config.cd_mb_size) #sfn w/o parentheses ==>  reference to the function. and will be called later
+        
     adjusted_scores = {s[1][0]: [] for s in scores}
     _ = [adjusted_scores[s[1][0]].append((np.tile(s[1][1], (s[0].shape[0], 1)) + s[0]) * detection_dataset.metadata[s[1][0]]['divide']) for s in scores]
     adjusted_scores = {k: np.concatenate(v, axis=0) for k, v in adjusted_scores.items()}
@@ -82,6 +83,8 @@ def cell_detection(image_id, config, load_from_previous=True):
     with open(results_save_path, 'wb') as f:
         pickle.dump(adjusted_scores, f)
     
+
+
     detection_dataset.client.save_cache(path=cache_save_path)
     
     del detection_dataset.client._tiles, detection_dataset, model, scores

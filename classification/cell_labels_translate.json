@@ -1,4 +1,4 @@
 {
-    "tumor": "Tumorcells",
-    "lymphocyte": "Lymphocytes" 
+    "tumor": "tumor",
+    "lymphocyte": "lymphocyte" 
 }
