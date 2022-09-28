@@ -99,7 +99,7 @@ plt.figure(figsize=(ph.shape[1] * figsize, ph.shape[0] * figsize))
 #### plt.contourf(ph[::-1, :])
 plt.imshow(ph > 10)
 plt.show()
-plt.savefig('/home/l.leek/src/CellDetect/IID/baseline_mask_plot.png')
+plt.savefig('/home/l.leek/src/CellDetect/IID/tumorcells_points_map.png')
 
 
 def cartesian(x1, x2):
@@ -138,9 +138,11 @@ m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=
 pm = m#[500:600, 150:250]# > 0.00001
 figsize = 1/20
 plt.figure(figsize=(pm.shape[1] * figsize, pm.shape[0] * figsize))
-#plt.contourf(pm[::-1, :])
-## plt.imshow(pm)
-#plt.show()
+plt.contourf(pm[::-1, :])
+# plt.imshow(pm)
+plt.show()
+plt.savefig('/home/l.leek/src/CellDetect/IID/tumorcells_mask.png')
+
 
 # th for resolution divide 200, bandwidth 0.5 was 0.05 
 # and for rd 50 bw 1.5 was 0.06
@@ -160,6 +162,7 @@ ax.axis('image')
 ax.set_xticks([])
 ax.set_yticks([])
 plt.show()
+plt.savefig('/home/l.leek/src/CellDetect/IID/tumorcells_originalHE_and_mask.png')
 
 
 c_adjusted = [c * resolution_divide for c in contours]
