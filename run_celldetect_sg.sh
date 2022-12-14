@@ -1,30 +1,40 @@
 cd src/CellDetect/ 
 
+###FIRST YOU HAVE TO REQUEST A GPU 
+
 #interactive
-singularity exec --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif /bin/bash
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bash
+singularity exec --nv --no-home /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bash
 #### THIS IS WHERE YOU ALSO INSTALL YOUR PACKAGES
 #exit with ctrl+ d
 
-#interactive
-singularity shell --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif
+#same: interactive
+singularity shell --nv /home/l.leek/docker_singularity_images/u20c114s.sif
 
-#Training of model for cell detection has been done by Siamak
+#If some packages are missing from singularity container. (The above interaction command directs to an environment that uses a different python location and packages)
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif \
+    bash -c "python3 -m pip install torch torchvision matplotlib spacy attrs"
 
-#Train classification model weights
-singularity exec --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif  \
-     bash -c "python3 -m train.py"
 
-#Score slides
+
+
+#Task 1: cell detection. Training of model for cell detection has been done by Siamak
+
+#Task 2: Train classification model weights with annotations from slidescore
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif \
+    bash -c "python3 -m train.py"
+
+#Task 3: Score slides
 cd src/CellDetect/ 
-singularity exec --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif  \
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif  \
     bash -c "python3 -m classification.pipeline.scoring_cupy_single /home/l.leek/src/CellDetect/IID/"
     
-#make a mask of slides
-singularity exec --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif \
+#Task 4: make a mask of slides
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif \
     bash -c "python3 export_ccpred_geojson.py"
 
-#make confusion_matrix
-singularity exec --nv /home/l.leek/docker_singularity_images/siamakg_23feb2022.sif \
+#Task 5: make confusion_matrix
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif \
     bash -c "python3 ##################"
 
 

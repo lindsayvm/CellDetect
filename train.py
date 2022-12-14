@@ -28,6 +28,8 @@ config.ExponentialLR_gamma = .9
 config.normalize_loss = False
 config.device = 'cuda:0'
 
+print("installation succesfull")
+
 
 ## Assign label class number
 with open(base_path + 'classification/cell_labels_translate.json', 'r') as f:
@@ -42,7 +44,7 @@ for v in reverse_translate_labels.values():
 print(annotation_classes)
 
 ## Create training (and validation) dataset from all trainig samples 
-annotation_fpath= '/home/l.leek/src/CellDetect/IID/mrr.txt'
+annotation_fpath= '/home/l.leek/src/CellDetect/IID/annotations/mrr.txt'
 a = pd.read_csv(annotation_fpath, sep='\t', dtype=str)
 annotation_by=['l.leek@nki.nl']
 scores = a[a['By'].apply(lambda b: b in annotation_by)].copy().reset_index(drop=True)
@@ -50,8 +52,8 @@ scores = a[a['By'].apply(lambda b: b in annotation_by)].copy().reset_index(drop=
 annotation_classes = {v: i for i, v in enumerate(scores['Question'].unique())}
 
 print("connect to slidescore")
-cell = CellClassificationDataset(key_fpath='/home/l.leek/src/CellDetect/IID/IID_slidescore_training.key', 
-                                 annotation_fpath= '/home/l.leek/src/CellDetect/IID/mrr.txt', 
+cell = CellClassificationDataset(key_fpath='/home/l.leek/src/CellDetect/IID/apikey/IID_slidescore_training.key', 
+                                 annotation_fpath= '/home/l.leek/src/CellDetect/IID/annotations/mrr.txt', 
                                  annotation_by=['l.leek@nki.nl'],#, 'name_of_annotator_2', '...'], 
                                  shuffle=True, #for the batches
                                  server='https://slidescore.nki.nl', 
@@ -100,7 +102,7 @@ learner = Learner(model=model,
 # If learning rate warm-up needs to be done, it should be here by accessing learner.optimizer and learner.lr_scheduler.
 # ???!! would be nice to have learner seperate 
 print("knowledge distillation")
-learner.load_model_state('/home/l.leek/src/CellDetect/IID/cc_dense161_256p_6class_v01_3adam1e5.pkl')
+learner.load_model_state('/home/l.leek/src/CellDetect/IID/weights/cc_dense161_256p_6class_v01_3adam1e5.pkl')
 # if some layers need to be frozen, it should be done here
 
 #add last layer because we have two classes that are predicted
@@ -115,7 +117,7 @@ learner.train(num_epochs=1, validation_epochs=1)
 
 #save model
 print("save model")
-learner.save_model_state('/home/l.leek/src/CellDetect/IID/trained_weights.pkl')
+learner.save_model_state('/home/l.leek/src/CellDetect/IID/weights.trained_weights.pkl')
 
 
 

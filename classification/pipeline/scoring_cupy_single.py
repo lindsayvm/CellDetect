@@ -1,17 +1,16 @@
 import warnings
 warnings.filterwarnings("ignore")
 
-#
 import gc
 import copy
 import os
+import torch
 import sys
 import pickle
 import random
 import numpy as np
 import pandas as pd
 from skimage import morphology, filters
-import torch
 
 #sys.path.append("/home/l.leek/HECellClassification-main")
 
@@ -23,8 +22,8 @@ import nn.models as models
 from image.data import HistoDataset
 import segmentation as smp
 
+print("installation complete")
 
-#
 cd_task, cc_task = None, None 
 tracker = None 
 
@@ -214,7 +213,7 @@ if __name__ == '__main__':
     #asyncio.run()
     run_path = sys.argv[1] #+ '/' + sys.argv[2] + '/'  # [:sys.argv[1].rfind('/') + 1]
     gconfig.results_path = run_path
-    gconfig.cd_targets_path = run_path + 'mrr.txt'
+    gconfig.cd_targets_path = run_path + 'annotations/mrr.txt'
     gconfig.progress_file_path = run_path + 'progress.json'
     gconfig.cd_results_path = run_path + 'cell_detection_results_img{}.pkl' 
     gconfig.cc_results_path = run_path + 'cell_classification_results_img{}.pkl'
@@ -222,5 +221,5 @@ if __name__ == '__main__':
     #
     
     tracker = TaskTracker(get_updated_boxes(), gconfig.progress_file_path)
-
+    print("start run")
     _run()
