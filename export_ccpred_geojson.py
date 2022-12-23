@@ -20,7 +20,13 @@ import matplotlib.pyplot as plt
 from multiprocessing import Pool
 import functools
 from matplotlib.colors import ListedColormap
-import cv2 #pip install opencv-python-headless
+import cv2 
+#pip install opencv-python==3.4.11.39 #3.4.11.41, 3.4.11.43, 3.4.11.45
+# >>> import cv2
+# Traceback (most recent call last):
+#   File "<stdin>", line 1, in <module>
+#   File "/home/l.leek/.local/lib/python3.8/site-packages/cv2/__init__.py", line 5, in <module>
+#     from .cv2 import *
 from collections import defaultdict
 from shapely.geometry import Polygon, MultiPolygon, mapping
 from shapely.affinity import translate
@@ -37,23 +43,21 @@ import config
 #data can be found in /home/l.leek/src/CellDetect/
 
 
-
-uploader_name = 'l.leek@nki.nl'
-
 #Get large segmentation rectangle annotations
-annotation_fpath= '/home/l.leek/src/CellDetect/IID/mrr_scoring_mask.txt' 
+annotation_fpath= '/home/l.leek/src/CellDetect/IID/annotations/mrr.txt' 
 a = pd.read_csv(annotation_fpath, sep='\t', dtype=str)
 annotation_by=['l.leek@nki.nl']
 a = a[a.By == 'l.leek@nki.nl'] #!!!! select for annotated by lindsay so you dont have empty rectangles
 
 #Get metadata
-with open('/home/l.leek/src/CellDetect/IID/IID_slidescore_training.key', 'r') as f:
+with open('/home/l.leek/src/CellDetect/IID/apikey/IID_slidescore_training.key', 'r') as f:
     apitoken = f.read().strip()
 client = SlidescoreClient(apitoken, server='https://slidescore.nki.nl')
-metadata = {i: client.get_image_metadata(i) for i in a['ImageID'].unique()} #Change to ImageID; scores --> a
+metadata = {i: client.get_image_metadata(i) for i in a['ImageID'].unique()}
+ #Change to ImageID; scores --> a
 
-#get cell classification results
-with open('/home/l.leek/src/CellDetect/IID/cell_classification_results_img386667.pkl', 'rb') as f:
+#get cell classification results full: cell_classification_results_img386688  partial: cell_classification_results_img386667
+with open('/home/l.leek/src/CellDetect/IID/cell_classification_results_img386688.pkl', 'rb') as f:
     d = pickle.load(f)
     preds = d['preds']
     scores = d['cell_labels_df']
@@ -80,8 +84,8 @@ scores.x, scores.y = scores.x.astype(int), scores.y.astype(int)
 image_id = ''.join(np.unique(scores['image_id']))
 print(image_id)
 
-objects = CellDetectionDataset(key_fpath='/home/l.leek/src/CellDetect/IID/IID_slidescore_training.key',
-                annotation_fpath='/home/l.leek/src/CellDetect/IID/mrr_scoring_mask.txt',                
+objects = CellDetectionDataset(key_fpath='/home/l.leek/src/CellDetect/IID/apikey/IID_slidescore_training.key',
+                annotation_fpath='/home/l.leek/src/CellDetect/IID/annotations/mrr.txt',                
                 annotation_by='l.leek@nki.nl', 
                 sample_size=config.cc_sample_size, #add sample size to determine stride,
                 image_id=image_id, #add image_id
@@ -163,7 +167,7 @@ m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=
 pm = m#[500:600, 150:250]# > 0.00001
 figsize = 1/20
 plt.figure(figsize=(pm.shape[1] * figsize, pm.shape[0] * figsize))
-plt.contourf(pm[::-1, :])
+#plt.contourf(pm[::-1, :])
 # plt.imshow(pm)
 plt.show()
 plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_mask.png')
@@ -187,11 +191,11 @@ ax.imshow(pm, cmap=plt.cm.gray)
 for contour in contours:
     ax.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color='green')
 
-ax.axis('image')
-ax.set_xticks([])
-ax.set_yticks([])
-plt.show()
-plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_originalHE_and_mask.png')
+# ax.axis('image')
+# ax.set_xticks([])
+# ax.set_yticks([])
+# plt.show()
+# plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_originalHE_and_mask.png')
 
 
 #adjust contours to resolution divide
@@ -222,11 +226,11 @@ img8bit=pixelate("/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells
 img8bit = np.array(img8bit)
 #print(img8bit)
 
-figsize=1/2000
-plt.figure(figsize=(img8bit.shape[1] * figsize, img8bit.shape[0] * figsize))
-plt.contourf(img8bit[::-1, :])
-plt.show()
-plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/mask_binary8bit.png')
+# figsize=1/2000
+# plt.figure(figsize=(img8bit.shape[1] * figsize, img8bit.shape[0] * figsize))
+# plt.contourf(img8bit[::-1, :])
+# plt.show()
+# plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/mask_binary8bit.png')
 
 # apply thresholding to convert grayscale to binary image.
 #print(np.unique(img8bit)) 
@@ -236,13 +240,13 @@ ret,thresh_img = cv2.threshold(img8bit,127.5,255,cv2.THRESH_BINARY)
 #make sure it s an numpy array
 thresh_img = np.array(thresh_img)
 
-#normal image
-img, cons, hiers = cv2.findContours(m, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-#8bit image
-img, cons, hiers = cv2.findContours(img8bit, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-#binary 8bit image
-img, cons, hiers = cv2.findContours(thresh_img, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-#no image
+# #normal image
+# img, cons, hiers = cv2.findContours(m, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+# #8bit image
+# img, cons, hiers = cv2.findContours(img8bit, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+# #binary 8bit image
+# img, cons, hiers = cv2.findContours(thresh_img, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+# #no image
 img, cons, hiers = cv2.findContours(m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
 # len([c for c in cons if c.shape[0] > 1])
