@@ -3,7 +3,8 @@ cd src/CellDetect/
 ###FIRST YOU HAVE TO REQUEST A GPU 
 
 #interactive
-singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bash
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bashclear
+
 singularity exec --nv --no-home /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bash
 #### THIS IS WHERE YOU ALSO INSTALL YOUR PACKAGES
 #exit with ctrl+ d
@@ -14,10 +15,6 @@ singularity shell --nv /home/l.leek/docker_singularity_images/u20c114s.sif
 #If some packages are missing from singularity container. (The above interaction command directs to an environment that uses a different python location and packages)
 singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif \
     bash -c "python3 -m pip install torch torchvision matplotlib spacy attrs"
-
-
-
-
 #Task 1: cell detection. Training of model for cell detection has been done by Siamak
 
 #Task 2: Train classification model weights with annotations from slidescore
