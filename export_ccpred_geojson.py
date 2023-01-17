@@ -14,6 +14,7 @@ import json
 import sys
 import collections 
 from sklearn.neighbors import KernelDensity
+#pip install scikit-learn==0.24.1
 from skimage import measure
 from scipy.stats import entropy
 import matplotlib.pyplot as plt
@@ -37,7 +38,7 @@ from slidescore.client import SlidescoreClient
 from slidescore.data import CellDetectionDataset 
 import config
 
-
+print("installation")
 #problem with installing?
 #singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif      bash -c "pip install geopandas; python3 export_ccpred_geojson.py"
 #data can be found in /home/l.leek/src/CellDetect/
@@ -46,12 +47,12 @@ import config
 #Get large segmentation rectangle annotations
 annotation_fpath= '/home/l.leek/src/CellDetect/IID/annotations/mrr.txt' 
 a = pd.read_csv(annotation_fpath, sep='\t', dtype=str)
-annotation_by=['l.leek@nki.nl']
 a = a[a.By == 'l.leek@nki.nl'] #!!!! select for annotated by lindsay so you dont have empty rectangles
 
 #Get metadata
 with open('/home/l.leek/src/CellDetect/IID/apikey/IID_slidescore_training.key', 'r') as f:
     apitoken = f.read().strip()
+
 client = SlidescoreClient(apitoken, server='https://slidescore.nki.nl')
 metadata = {i: client.get_image_metadata(i) for i in a['ImageID'].unique()}
  #Change to ImageID; scores --> a
@@ -125,11 +126,10 @@ figsize = 1/20
 plt.figure(figsize=(ph.shape[1] * figsize, ph.shape[0] * figsize))
 #### plt.contourf(ph[::-1, :])
 plt.imshow(ph > 10)
-#plt.show()
 plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_points_map.png')
+#plt.show()
 
 
-#make smooth heatmap plot
 
 def cartesian(x1, x2):
     return np.transpose([np.tile(x1, len(x2)), np.repeat(x2, len(x1))])
@@ -160,17 +160,19 @@ def points2smooth(l, b, bandwidth=0.5, num_process=1):
         m = np.concatenate(pool.map(_f, g_parts)).reshape((gx.shape[0], gy.shape[0])).T
     return m / m.max()
 
-#print("points2smooth")
-m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=8)
 
+print("points2smooth")
+m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=8)
 
 pm = m#[500:600, 150:250]# > 0.00001
 figsize = 1/20
 plt.figure(figsize=(pm.shape[1] * figsize, pm.shape[0] * figsize))
-#plt.contourf(pm[::-1, :])
+plt.contourf(pm[::-1, :])
 # plt.imshow(pm)
-plt.show()
 plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_mask.png')
+#plt.show()
+
+
 
 
 #make smooth heatmap plot + contour
@@ -186,16 +188,14 @@ fig, ax = plt.subplots(figsize=(pm.shape[1] * figsize, pm.shape[0] * figsize))
 ax.imshow(pm, cmap=plt.cm.gray)
 # ax.contourf(pm)
 
-
-
 for contour in contours:
     ax.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color='green')
 
-# ax.axis('image')
-# ax.set_xticks([])
-# ax.set_yticks([])
-# plt.show()
-# plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_originalHE_and_mask.png')
+ax.axis('image')
+ax.set_xticks([])
+ax.set_yticks([])
+plt.savefig('/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_originalHE_and_mask.png')
+#plt.show()
 
 
 #adjust contours to resolution divide
@@ -209,21 +209,21 @@ m_thresh = cv2.convertScaleAbs(m_thresh)
 
 
 #Make it 8-bit
-from PIL import Image
-def pixelate(input_file_path, pixel_size):
-    image = Image.open(input_file_path)
-    image = image.resize(
-        (image.size[0] // pixel_size, image.size[1] // pixel_size),
-        Image.NEAREST
-    )
-    image = image.resize(
-        (image.size[0] * pixel_size, image.size[1] * pixel_size),
-        Image.NEAREST
-    )
-    return image
+# from PIL import Image
+# def pixelate(input_file_path, pixel_size):
+#     image = Image.open(input_file_path)
+#     image = image.resize(
+#         (image.size[0] // pixel_size, image.size[1] // pixel_size),
+#         Image.NEAREST
+#     )
+#     image = image.resize(
+#         (image.size[0] * pixel_size, image.size[1] * pixel_size),
+#         Image.NEAREST
+#     )
+#     return image
 
-img8bit=pixelate("/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_mask.png",8)
-img8bit = np.array(img8bit)
+# img8bit=pixelate("/home/l.leek/src/CellDetect/IID/output_mask/figures/tumorcells_mask.png",8)
+# img8bit = np.array(img8bit)
 #print(img8bit)
 
 # figsize=1/2000
@@ -234,11 +234,11 @@ img8bit = np.array(img8bit)
 
 # apply thresholding to convert grayscale to binary image.
 #print(np.unique(img8bit)) 
-ret,thresh_img = cv2.threshold(img8bit,127.5,255,cv2.THRESH_BINARY)
+#ret,thresh_img = cv2.threshold(img8bit,127.5,255,cv2.THRESH_BINARY)
 #print(np.unique(thresh_img)) 
 
 #make sure it s an numpy array
-thresh_img = np.array(thresh_img)
+#thresh_img = np.array(thresh_img)
 
 # #normal image
 # img, cons, hiers = cv2.findContours(m, m_thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -293,10 +293,8 @@ exjson = str({k:v for k,v in geopd.GeoSeries([mpoly_box_offest]).__geo_interface
 exjson = exjson.replace(',)', ')').replace('(', '[').replace(')', ']').replace('\'', '\"')
 
 
-with open('IID/output_mask/T12_95093_A1_HE__model_scores_5class_r3_mu__model_tumor.json', 'w') as f:
+with open('IID/output_mask/T19_07579_II6_HE_2class_tumor_img386688.json', 'w') as f:
     f.write(exjson)
-
-
 
 
 schema = {
@@ -304,6 +302,6 @@ schema = {
     'properties': {'id': 'int'},
 }
 
-with fiona.open('IID/output_mask/T12_95093_A1_HE__model_scores_5class_r3_mu__model_tumor.shp', 'w', 'ESRI Shapefile', schema) as c:
+with fiona.open('IID/output_mask/T19_07579_II6_HE_2class_tumor_img386688.shp', 'w', 'ESRI Shapefile', schema) as c:
     ## If there are multiple geometries, put the "for" loop here
     c.write({'geometry': mapping(mpoly), 'properties': {'id': 1} })

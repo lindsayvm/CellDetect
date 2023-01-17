@@ -34,13 +34,14 @@ print("installation succesfull")
 ## Assign label class number
 with open(base_path + 'classification/cell_labels_translate.json', 'r') as f:
     reverse_translate_labels = json.load(f)
-    
+
 annotation_classes = {}
 i = 0
 for v in reverse_translate_labels.values():
     if annotation_classes.get(v, -1) == -1:
         annotation_classes[v] = i
         i += 1
+
 print(annotation_classes)
 
 ## Create training (and validation) dataset from all trainig samples 
@@ -117,7 +118,7 @@ learner.train(num_epochs=1, validation_epochs=1)
 
 #save model
 print("save model")
-learner.save_model_state('/home/l.leek/src/CellDetect/IID/weights.trained_weights.pkl')
+learner.save_model_state('/home/l.leek/src/CellDetect/IID/weights/trained_weights.pkl')
 
 
 
