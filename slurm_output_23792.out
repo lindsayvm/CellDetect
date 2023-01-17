@@ -1,3 +1,0 @@
-WARNING: The directory '/home/l.leek/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
-ERROR: Invalid requirement: '&&'
-Job finished succesfully

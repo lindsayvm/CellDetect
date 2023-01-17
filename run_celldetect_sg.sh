@@ -3,14 +3,22 @@ cd src/CellDetect/
 ###FIRST YOU HAVE TO REQUEST A GPU 
 
 #interactive
+<<<<<<< HEAD
 singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bash
+=======
+singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bashclear
+>>>>>>> 17c97284dfe2075f9f7f4cf198279fa8676ced6b
 
 singularity exec --nv --no-home /home/l.leek/docker_singularity_images/u20c114s.sif /bin/bash
 #### THIS IS WHERE YOU ALSO INSTALL YOUR PACKAGES
 #exit with ctrl+ d
 
 #same: interactive
+<<<<<<< HEAD
 #singularity shell --nv /home/l.leek/docker_singularity_images/u20c114s.sif
+=======
+singularity shell --nv /home/l.leek/docker_singularity_images/u20c114s.sif
+>>>>>>> 17c97284dfe2075f9f7f4cf198279fa8676ced6b
 
 #If some packages are missing from singularity container. (The above interaction command directs to an environment that uses a different python location and packages)
 singularity exec --nv /home/l.leek/docker_singularity_images/u20c114s.sif \
