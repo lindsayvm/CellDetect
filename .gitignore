@@ -8,6 +8,10 @@ __pycache__/
 
 # project
 *.pkl
+*.key
+*.txt
+archive/
+*.out
 
 # Distribution / packaging
 .Python
@@ -131,4 +135,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+.git.bfg.-report
 

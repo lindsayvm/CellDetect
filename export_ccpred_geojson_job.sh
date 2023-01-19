@@ -10,7 +10,7 @@
 
 JOBS_SOURCE="/home/l.leek/src/CellDetect/"
 SINGULARITYIMAGE="/home/l.leek/docker_singularity_images/u20c114s.sif"
-COMMAND="pip3 install scipy && python3 export_ccpred_geojson.py"
+COMMAND="python3 export_ccpred_geojson.py"
 
 singularity exec --nv \
 --no-home \
