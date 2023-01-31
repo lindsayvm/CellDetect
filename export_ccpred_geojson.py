@@ -166,6 +166,14 @@ def points2smooth(l, b, bandwidth=0.5, num_process=1):
 
 print("points2smooth")
 m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=8) 
+# points2smooth
+# Traceback (most recent call last):
+#   File "export_ccpred_geojson.py", line 168, in <module>
+#     m = points2smooth('model_tumor', objects.boxes.loc[0], bandwidth=2, num_process=8) 
+#   File "export_ccpred_geojson.py", line 159, in points2smooth
+#     m = _f((d, grid)).reshape((gx.shape[0], gy.shape[0])).T
+# ValueError: cannot reshape array of size 273141 into shape (1417,1705)
+
 
 pm = m#[500:600, 150:250]# > 0.00001
 figsize = 1/20
